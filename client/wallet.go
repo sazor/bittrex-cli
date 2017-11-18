@@ -121,26 +121,19 @@ func sortByChange(wallet Wallet, asc bool) {
 	})
 }
 
-func WalletBalances(order string, orderdir string) Wallet {
-	client := GetClient()
-	balances, err := client.GetBalances()
-	if err != nil {
-		fmt.Println("Connection issues: %+v", err)
-		os.Exit(1)
-	}
-	tickers := getNotNullTickers(balances)
+func fetchInfo(tickers map[string]float64) Wallet {
 	var wg sync.WaitGroup
 	wg.Add(len(tickers))
-	var wallet Wallet
 
+	var wallet Wallet
 	for ticker, balance := range tickers {
 		go func(ticker string, balance float64) {
 			tickerCh := make(chan bittrex.Ticker)
+			orderCh := make(chan []bittrex.Order)
 			go func() {
 				ticker, _ := client.GetTicker("BTC-" + ticker)
 				tickerCh <- ticker
 			}()
-			orderCh := make(chan []bittrex.Order)
 			go func() {
 				history, _ := client.GetOrderHistory("BTC-" + ticker)
 				orderCh <- history
@@ -157,6 +150,18 @@ func WalletBalances(order string, orderdir string) Wallet {
 		}(ticker, balance)
 	}
 	wg.Wait()
+	return wallet
+}
+
+func WalletBalances(order string, orderdir string) Wallet {
+	client := GetClient()
+	balances, err := client.GetBalances()
+	if err != nil {
+		fmt.Println("Connection issues: %+v", err)
+		os.Exit(1)
+	}
+	tickers := getNotNullTickers(balances)
+	wallet := fetchInfo(tickers)
 	wallet.Sort(order, orderdir)
 	return wallet
 }
