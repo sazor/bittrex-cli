@@ -2,22 +2,17 @@ package main
 
 import (
 	"fmt"
+	"os"
 
-	"github.com/apcera/termtables"
+	"github.com/sazor/bittrex-cli/cmd"
 )
 
 func main() {
-	client := getBittrexClient()
-	wallet := walletBalances(client)
-
-	table := termtables.CreateTable()
-	table.AddHeaders("Ticker", "Current Price", "Avg Price", "Price Change", "BTC Balance")
-	for ticker, walletCoin := range wallet {
-		table.AddRow(ticker,
-			fmt.Sprintf("%0.8f", walletCoin.CurrPrice),
-			fmt.Sprintf("%0.8f", walletCoin.AvgPrice),
-			walletCoin.percentDiffPrice(),
-			fmt.Sprintf("%0.8f", walletCoin.btcBalance()))
+	if err := cmd.RootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
-	fmt.Println(table.Render())
+	// client := getBittrexClient()
+	// wallet := walletBalances(client)
+	// fmt.Println(wallet)
 }
