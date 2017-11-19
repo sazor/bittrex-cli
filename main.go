@@ -12,7 +12,4 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	// client := getBittrexClient()
-	// wallet := walletBalances(client)
-	// fmt.Println(wallet)
 }

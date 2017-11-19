@@ -1,4 +1,4 @@
-// Copyright © 2017 NAME HERE <EMAIL ADDRESS>
+// Copyright © 2017 Andrew Kozlov <andrewkozlov@icloud.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,16 +27,20 @@ var OrderDirection string
 // walletCmd represents the wallet command
 var walletCmd = &cobra.Command{
 	Use:   "wallet",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Display information about your wallet.",
+	Long: `Print table with information about your altcoins:
+			ticker, current price, average price of your position,
+			price change in % and balance in btc.
+			Also show display bitcoin balance and estimated balance of
+			whole wallet in btc and $.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		wallet := client.WalletBalances(Order, OrderDirection)
-		fmt.Println(wallet)
+		altWallet := client.WalletBalances(Order, OrderDirection)
+		fmt.Println(altWallet)
+		walletBtc := client.GetWalletBtc()
+		walletBtc.EstimateBtc(altWallet)
+		fmt.Println(walletBtc)
+		fmt.Printf("Estimated: %0.8f => %0.2f$ \n", walletBtc.Estimated,
+			walletBtc.Estimated*walletBtc.Price)
 	},
 }
 
@@ -46,14 +50,4 @@ func init() {
 		"Choose table sorting (curprice, avgprice, change, balance)")
 	walletCmd.Flags().StringVarP(&OrderDirection, "orderdir", "d", "asc",
 		"Order direction (asc / desc)")
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// walletCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// walletCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

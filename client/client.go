@@ -5,27 +5,22 @@ import (
 	"os"
 	"sync"
 
-	"github.com/caarlos0/env"
+	"github.com/theherk/viper"
 	bittrex "github.com/toorop/go-bittrex"
 )
-
-type config struct {
-	BittrexKey    string `env:"BITTREX_KEY"`
-	BittrexSecret string `env:"BITTREX_SECRET"`
-}
 
 var once sync.Once
 var client *bittrex.Bittrex
 
 func GetClient() *bittrex.Bittrex {
 	once.Do(func() {
-		cfg := config{}
-		err := env.Parse(&cfg)
-		if err != nil {
-			fmt.Println("Set BITTREX_KEY and BITTREX_SECRET environment variables.")
+		key := viper.GetString("key")
+		secret := viper.GetString("secret")
+		if key == "" || secret == "" {
+			fmt.Println("Set API key and secret via config command.")
 			os.Exit(1)
 		}
-		client = bittrex.New(cfg.BittrexKey, cfg.BittrexSecret)
+		client = bittrex.New(key, secret)
 	})
 	return client
 }
